@@ -155,5 +155,6 @@ class CLIPPE(SupervisedTemplate):
                 self.model.g_v_values.grad *= reg_lambda
                 self.model.g_l_values.grad *= reg_lambda
                 self.model.s_values.grad *= reg_lambda
-                self.model.prompt_proj.weight.grad *= reg_lambda
-                self.model.prompt_proj.bias.grad *= reg_lambda
+                for param in self.model.prompt_proj.parameters():
+                    if param.grad is not None:
+                        param.grad *= reg_lambda
