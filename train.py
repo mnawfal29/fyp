@@ -26,10 +26,10 @@ parser.add_argument("--L_g", type=int, default=2, help="Number of general prompt
 parser.add_argument("--L_s", type=int, default=2, help="Number of shared prompts to be used")
 parser.add_argument("--D_g", type=int, default=4, help="Number of layers in which the general prompts will be processed")
 parser.add_argument("--D_s", type=int, default=8, help="Number of layers in which the shared prompts will be processed")
-# parser.add_argument("--text_deep_replace_method", type=str, default="replace", choices=["replace", "accumalate", "accumulate_same"], help="Method to replace the text prompts in the encoders. Options: replace, accumulate, accumulate_same")
-# parser.add_argument("--vision_deep_replace_method", type=str, default="accumulate", choices=["replace", "accumulate", "accumulate_same"], help="Method to replace the vision prompts in the encoders. Options: replace, accumulate, accumulate_same")
+parser.add_argument("--text_deep_replace_method", type=str, default="replace", choices=["replace", "accumalate", "accumulate_same"], help="Method to replace the text prompts in the encoders. Options: replace, accumulate, accumulate_same")
+parser.add_argument("--vision_deep_replace_method", type=str, default="accumulate", choices=["replace", "accumulate", "accumulate_same"], help="Method to replace the vision prompts in the encoders. Options: replace, accumulate, accumulate_same")
 parser.add_argument("--dataset_name", type=str, default="cifar100", choices=["cifar100", "cub200", "miniimagenet"], help="Name of the dataset to be used. Options: cifar100, cub200, miniimagenet")
-parser.add_argument("--n_runs", type=int, default=5, help="Number of runs to be executed", required=False)
+parser.add_argument("--n_runs", type=int, default=1, help="Number of runs to be executed", required=False)
 parser.add_argument("--seeds", type=int, nargs="+", help="Seeds to be used in the runs", required=False)
 # parser.add_argument("--ablation", type=str, choices=["no_accumulation", "no_regularization", "no_vision_prompts"])
 
@@ -41,7 +41,7 @@ few_shot_examples = [5]
 
 assert n_runs > 0, "Number of runs must be greater than 0."
 # NOTE: Seeds used in the paper for 5 runs are: seeds = [42, 13, 50, 24, 69]
-seeds = args.seeds if args.seeds else [s for s in range(42, 42 + n_runs)]
+seeds = [42]
 # ablation = args.ablation
 
 img_preprocess = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch16").feature_extractor
@@ -61,8 +61,8 @@ if __name__ == "__main__":
             L_s=args.L_s,
             D_g=args.D_g,
             D_s=args.D_s,
-            text_deep_replace_method="replace",
-            vision_deep_replace_method="replace",
+            text_deep_replace_method=args.text_deep_replace_method,
+            vision_deep_replace_method=args.vision_deep_replace_method,
             regularization_method='balance',
             train_mb_size_base_class=train_mb_size_base_class,
             train_epochs_base_class=train_epochs_base_class,
