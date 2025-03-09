@@ -133,7 +133,9 @@ class CLIPPE(SupervisedTemplate):
         
         if self.regularization_method == 'freeze':
             if self.num_actual_experience > 1:
-                self.model.g_values.requires_grad = False
+                self.model.g_v_values.requires_grad = False
+                self.model.g_l_values.requires_grad = False
+                self.model.s_values.requires_grad = False
                 self.model.prompt_proj.requires_grad = False
                 
         super()._before_training_exp()
@@ -150,6 +152,8 @@ class CLIPPE(SupervisedTemplate):
         if self.num_actual_experience > 1:
             if self.regularization_method == 'balance':
                 reg_lambda = self.num_classes_per_exp[self.num_actual_experience-1] / sum(self.num_classes_per_exp[:self.num_actual_experience])
-                self.model.g_values.grad *= reg_lambda
+                self.model.g_v_values.grad *= reg_lambda
+                self.model.g_l_values.grad *= reg_lambda
+                self.model.s_values.grad *= reg_lambda
                 self.model.prompt_proj.weight.grad *= reg_lambda
                 self.model.prompt_proj.bias.grad *= reg_lambda
