@@ -185,31 +185,38 @@ class CLIPVisionModelForPromptTuning(nn.Module):
         return self.model.post_layernorm(x[:, 0, :])
 
 
-class TransformerBlock(nn.Module):
-    def __init__(self, dim_in=512, dim_out=768, num_heads=4):
-        super().__init__()
+class MultiHeadSelfAttention(nn.Module):
+    def __init__(self, input_dim, embed_dim, num_heads=4):
+        super(MultiHeadSelfAttention, self).__init__()
+        self.input_dim = input_dim
+        self.embed_dim = embed_dim
         self.num_heads = num_heads
-        self.head_dim = dim_in // num_heads  # Split for multi-heads
-
-        # Linear layers for Q, K, V
-        self.q_proj = nn.Linear(dim_in, dim_in, bias=False)
-        self.k_proj = nn.Linear(dim_in, dim_in, bias=False)
-        self.v_proj = nn.Linear(dim_in, dim_in, bias=False)
-
-        # Projection to 768 after attention
-        self.proj = nn.Linear(dim_in, dim_out)
-
+        self.head_dim = embed_dim // num_heads
+        
+        assert self.head_dim * num_heads == embed_dim, "Embedding dimension must be divisible by number of heads"
+        
+        self.qkv_proj = nn.Linear(input_dim, embed_dim * 3)  # Single projection for Q, K, V
+        self.out_proj = nn.Linear(embed_dim, embed_dim)
+        
     def forward(self, x):
+        batch_size, seq_length, input_dim = x.shape
+        
         # Compute Q, K, V
-        Q = self.q_proj(x)
-        K = self.k_proj(x)
-        V = self.v_proj(x)
-
-        # Efficient scaled dot-product attention (PyTorch 2.0+)
-        attn_output = F.scaled_dot_product_attention(Q, K, V)
-
-        # Project to 768
-        return self.proj(attn_output)
+        qkv = self.qkv_proj(x)  # Shape: (batch_size, seq_length, 3 * embed_dim)
+        qkv = qkv.reshape(batch_size, seq_length, self.num_heads, 3 * self.head_dim)
+        q, k, v = qkv.chunk(3, dim=-1)  # Each shape: (batch_size, seq_length, num_heads, head_dim)
+        
+        # Transpose for multi-head processing: (batch_size, num_heads, seq_length, head_dim)
+        q, k, v = [t.permute(0, 2, 1, 3) for t in (q, k, v)]
+        
+        # Scaled dot-product attention
+        scores = torch.matmul(q, k.transpose(-2, -1)) / (self.head_dim ** 0.5)
+        attn_weights = F.softmax(scores, dim=-1)
+        
+        out = torch.matmul(attn_weights, v)  # (batch_size, num_heads, seq_length, head_dim)
+        out = out.permute(0, 2, 1, 3).reshape(batch_size, seq_length, self.embed_dim)
+        
+        return self.out_proj(out)  # Final linear projection
     
 
 ################################
@@ -257,7 +264,7 @@ class CLIPParameterEfficient(nn.Module):
         for p in self.parameters():
             p.requires_grad = False
 
-        self.prompt_proj = TransformerBlock(self.text_model.d_model, self.vision_model.d_model)
+        self.prompt_proj = MultiHeadSelfAttention(self.text_model.d_model, self.vision_model.d_model)
         # self.prompt_proj = nn.Linear(self.text_model.d_model, self.vision_model.d_model)
         self.g_v_values = nn.Parameter(torch.zeros(D_g, L_g, self.vision_model.d_model))
         self.g_l_values = nn.Parameter(torch.zeros(D_g, L_g, self.text_model.d_model))

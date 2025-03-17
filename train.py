@@ -17,7 +17,7 @@ warnings.filterwarnings("ignore")
 
 datasets = dict(
     cub200 = dict(dataset = CUB200FSCIL, train_mb_size_base_class = 4, train_epochs_base_class = 6),
-    cifar100 = dict(dataset = CIFAR100FSCIL, train_mb_size_base_class = 32, train_epochs_base_class = 5),
+    cifar100 = dict(dataset = CIFAR100FSCIL, train_mb_size_base_class = 32, train_epochs_base_class = 8),
     miniimagenet = dict(dataset = MiniImageNetFSCIL, train_mb_size_base_class = 32, train_epochs_base_class = 5)
 )
 
