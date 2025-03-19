@@ -64,9 +64,9 @@ class CLIPTextModelForPromptTuning(nn.Module):
                 elif i >= (total_num_layers - self.D_s):
                     p = s_prompt[:, i - (total_num_layers - self.D_s)]
 
-                # if self.deep_replace_method == "accumulate":
-                #     previous_p_out = x[:, 1 : (L_p + 1), :]
-                #     p = torch.cat([previous_p_out, p], dim=1)
+                if self.deep_replace_method == "accumulate":
+                    previous_p_out = x[:, 1 : (L_p + 1), :]
+                    p = torch.cat([previous_p_out, p], dim=1)
                 x = torch.cat([x[:, 0:1, :], p, x[:, (L_p + 1) :, :]], dim=1)
                 L_p = p.size(1)
 
@@ -153,9 +153,9 @@ class CLIPVisionModelForPromptTuning(nn.Module):
                 elif i >= (total_num_layers - self.D_s):
                     p = s_prompt[:, i - (total_num_layers - self.D_s)]
 
-                # if self.deep_replace_method == "accumulate":
-                #     previous_p_out = x[:, -L_p:, :]
-                #     p = torch.cat([previous_p_out, p], dim=1)
+                if self.deep_replace_method == "accumulate":
+                    previous_p_out = x[:, -L_p:, :]
+                    p = torch.cat([previous_p_out, p], dim=1)
                 x = torch.cat([x[:, :-L_p, :], p], dim=1)
                 L_p = p.size(1)
 
