@@ -270,6 +270,8 @@ class CLIPParameterEfficient(nn.Module):
         self.g_l_values = nn.Parameter(torch.zeros(D_g, L_g, self.text_model.d_model))
         self.s_values = nn.Parameter(torch.zeros(D_s, L_s, self.text_model.d_model))
 
+        nn.init.xavier_uniform_(self.g_v_values.data)
+        nn.init.xavier_uniform_(self.g_l_values.data)
         nn.init.xavier_uniform_(self.s_values.data)
 
         self.L_g = L_g
