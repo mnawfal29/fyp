@@ -36,7 +36,7 @@ parser.add_argument("--seeds", type=int, nargs="+", help="Seeds to be used in th
 args = parser.parse_args()
 n_runs = args.n_runs
 dataset_name = args.dataset_name
-
+print(args)
 few_shot_examples = [5]
 
 assert n_runs > 0, "Number of runs must be greater than 0."
