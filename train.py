@@ -48,7 +48,7 @@ img_preprocess = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch16").f
 
 if __name__ == "__main__":
     for run in range(n_runs):
-        exp_name = f"model_{dataset_name}_L_g_{args.L_g}_L_s_{args.L_s}_D_g_{args.D_g}_D_s_{args.D_s}_run_{run}"
+        exp_name = f"model_{dataset_name}_L_g_{args.L_g}_L_s_{args.L_s}_D_g_{args.D_g}_D_s_{args.D_s}_TRM{args.text_deep_replace_method}_VRM{args.vision_deep_replace_method}_run_{run}"
         
         Dataset = datasets[dataset_name]["dataset"]
         train_mb_size_base_class = datasets[dataset_name]["train_mb_size_base_class"]
@@ -68,7 +68,7 @@ if __name__ == "__main__":
             train_epochs_base_class=train_epochs_base_class,
             lr=0.00325,
             use_scheduler=True,
-            json_file_name=exp_name + ".json",
+            json_file_name='results/' + exp_name + ".json",
             eval_mb_size=64
         )
         print(strategy.model)
